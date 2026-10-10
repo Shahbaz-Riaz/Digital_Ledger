@@ -1,0 +1,618 @@
+/* ---------------------------------------------------------------------
+   Design tokens
+   A ledger book, not a SaaS dashboard: aged paper, brass rules, fountain-
+   pen navy for entries, red ink for the credit side (the bookkeeper's
+   convention this whole layout is borrowed from).
+--------------------------------------------------------------------- */
+:root {
+  --paper: #f7f0dc;
+  --paper-dark: #efe4c4;
+  --sidebar-bg: #efe6cb;
+  --ledger-green: #1f4235;
+  --ledger-green-dark: #163026;
+  --ink-navy: #2a3358;
+  --ink-red: #9c2b2b;
+  --brass: #9c7a3c;
+  --rule-light: rgba(31, 66, 53, 0.18);
+  --rule-strong: rgba(31, 66, 53, 0.45);
+  --shadow: rgba(40, 30, 10, 0.28);
+
+  --font-display: 'Playfair Display', 'Georgia', serif;
+  --font-body: 'EB Garamond', 'Georgia', serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--paper-dark);
+  color: var(--ink-navy);
+}
+
+button {
+  font-family: var(--font-body);
+}
+
+/* ---------------------------------------------------------------------
+   App shell
+--------------------------------------------------------------------- */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---------------------------------------------------------------------
+   Sidebar
+--------------------------------------------------------------------- */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--rule-strong);
+  padding: 28px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sidebar-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--ledger-green-dark);
+  letter-spacing: 0.02em;
+  margin: 0 0 4px 4px;
+}
+
+.account-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--ink-navy);
+  border: 1px solid transparent;
+}
+
+.account-item:hover {
+  background: rgba(31, 66, 53, 0.08);
+}
+
+.account-item.active {
+  background: var(--ledger-green);
+  color: var(--paper);
+  border-color: var(--ledger-green-dark);
+}
+
+.account-item .account-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--brass);
+  flex-shrink: 0;
+}
+
+.account-item.active .account-dot {
+  background: var(--paper);
+}
+
+.account-delete {
+  opacity: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 2px 4px;
+}
+
+.account-item:hover .account-delete {
+  opacity: 0.6;
+}
+
+.account-delete:hover {
+  opacity: 1 !important;
+}
+
+.new-account-btn {
+  margin-top: 8px;
+  background: transparent;
+  border: 1px dashed var(--rule-strong);
+  color: var(--ledger-green-dark);
+  padding: 10px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 14px;
+  letter-spacing: 0.03em;
+}
+
+.new-account-btn:hover {
+  background: rgba(31, 66, 53, 0.06);
+}
+
+.new-account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--paper);
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.new-account-form input,
+.new-account-form select {
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 7px 8px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  background: #fffdf6;
+  color: var(--ink-navy);
+}
+
+.new-account-form .form-row {
+  display: flex;
+  gap: 6px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.btn-primary,
+.btn-secondary {
+  border-radius: 3px;
+  padding: 7px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid var(--ledger-green);
+}
+
+.btn-primary {
+  background: var(--ledger-green);
+  color: var(--paper);
+}
+
+.btn-primary:hover {
+  background: var(--ledger-green-dark);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ledger-green-dark);
+}
+
+.btn-secondary:hover {
+  background: rgba(31, 66, 53, 0.08);
+}
+
+/* ---------------------------------------------------------------------
+   Main ledger book
+--------------------------------------------------------------------- */
+.ledger-main {
+  flex: 1;
+  padding: 36px 40px;
+  display: flex;
+  justify-content: center;
+  overflow-x: auto;
+}
+
+.ledger-book {
+  width: 100%;
+  max-width: 980px;
+  background: var(--paper);
+  box-shadow: 0 18px 40px var(--shadow), 0 1px 0 var(--rule-strong);
+  border-radius: 2px;
+  padding: 34px 40px 30px;
+  position: relative;
+}
+
+.ledger-book::before {
+  /* the bound spine shadow down the left edge, like a book gutter */
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 26px;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
+  pointer-events: none;
+}
+
+.ledger-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 3px double var(--ledger-green);
+  padding-bottom: 10px;
+  margin-bottom: 4px;
+}
+
+.ledger-brand {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.12em;
+  color: var(--ledger-green-dark);
+  text-transform: uppercase;
+}
+
+.ledger-page-no {
+  font-family: var(--font-display);
+  color: var(--brass);
+  font-size: 15px;
+}
+
+.ledger-toolbar {
+  display: flex;
+  gap: 10px;
+}
+
+.toolbar-btn {
+  background: var(--paper);
+  border: 1px solid var(--brass);
+  color: var(--ledger-green-dark);
+  padding: 6px 13px;
+  border-radius: 3px;
+  font-size: 13px;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+
+.toolbar-btn:hover {
+  background: rgba(156, 122, 60, 0.14);
+}
+
+.account-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 18px 0 22px;
+}
+
+.account-heading .label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 19px;
+  color: var(--ink-navy);
+}
+
+.account-heading .name {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 26px;
+  color: var(--ledger-green-dark);
+  border-bottom: 1px solid var(--ledger-green);
+  padding-bottom: 2px;
+}
+
+/* ---------------------------------------------------------------------
+   Table
+--------------------------------------------------------------------- */
+.ledger-table-wrap {
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+table.ledger-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 15px;
+}
+
+.ledger-table thead th {
+  background: var(--ledger-green);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  padding: 10px 12px;
+  border-right: 1px solid rgba(247, 240, 220, 0.18);
+}
+
+.ledger-table thead th:last-child {
+  border-right: none;
+}
+
+.ledger-table th.num,
+.ledger-table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ledger-table tbody td {
+  padding: 9px 12px;
+  border-right: 1px solid var(--rule-light);
+  border-bottom: 1px solid var(--rule-light);
+  vertical-align: top;
+}
+
+.ledger-table tbody td:last-child {
+  border-right: none;
+}
+
+.ledger-table tbody tr:nth-child(5n) td {
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.ledger-table tbody tr:hover td {
+  background: rgba(31, 66, 53, 0.05);
+}
+
+.ledger-table td.credit-amt {
+  color: var(--ink-red);
+}
+
+.balance-cell {
+  white-space: nowrap;
+}
+
+.drcr-tag {
+  font-style: italic;
+  color: var(--brass);
+  font-size: 0.85em;
+}
+
+.row-delete {
+  background: none;
+  border: none;
+  color: var(--rule-strong);
+  cursor: pointer;
+  font-size: 13px;
+  visibility: hidden;
+}
+
+.ledger-table tbody tr:hover .row-delete {
+  visibility: visible;
+}
+
+.row-delete:hover {
+  color: var(--ink-red);
+}
+
+/* New-entry input row */
+.entry-form-row input {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 14px;
+  padding: 5px 6px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: #fffdf6;
+  color: var(--ink-navy);
+}
+
+.entry-form-row input::placeholder {
+  color: #9a9270;
+}
+
+.ledger-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 14px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 2px solid var(--ledger-green);
+}
+
+.ledger-footer .label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+}
+
+.ledger-footer .value {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--ledger-green-dark);
+}
+
+.empty-state {
+  padding: 40px 10px;
+  text-align: center;
+  color: #8a8158;
+  font-style: italic;
+}
+
+.error-banner {
+  background: #f6dede;
+  border: 1px solid var(--ink-red);
+  color: var(--ink-red);
+  padding: 8px 14px;
+  border-radius: 3px;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+/* ---------------------------------------------------------------------
+   Print
+--------------------------------------------------------------------- */
+@media print {
+  .sidebar,
+  .ledger-toolbar,
+  .row-delete,
+  .entry-form-row {
+    display: none !important;
+  }
+
+  body,
+  .ledger-main {
+    background: white;
+    padding: 0;
+  }
+
+  .ledger-book {
+    box-shadow: none;
+    max-width: 100%;
+  }
+
+  .ledger-book::before {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Responsive
+   Below tablet width the two-pane layout can't hold: the sidebar becomes
+   a horizontally-scrolling account strip pinned to the top, and the
+   ledger table (still seven columns wide) scrolls horizontally within
+   its own card rather than trying to compress columns into
+   unreadability.
+--------------------------------------------------------------------- */
+@media (max-width: 900px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 14px 16px;
+    gap: 12px;
+    border-right: none;
+    border-bottom: 1px solid var(--rule-strong);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .sidebar-title {
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .account-list {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 6px;
+    flex: 1;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .account-item {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .new-account-btn {
+    margin-top: 0;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .new-account-form {
+    width: 100%;
+    order: 3;
+  }
+
+  .ledger-main {
+    padding: 18px 14px;
+  }
+
+  .ledger-book {
+    padding: 20px 16px 18px;
+  }
+
+  .ledger-book::before {
+    display: none;
+  }
+
+  .ledger-topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .ledger-toolbar {
+    order: 3;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .toolbar-btn {
+    flex: 1;
+    text-align: center;
+    padding: 8px 10px;
+  }
+
+  .account-heading {
+    flex-direction: column;
+    gap: 2px;
+    margin: 14px 0 16px;
+  }
+
+  .account-heading .name {
+    font-size: 22px;
+  }
+
+  /* Seven columns won't compress onto a phone screen without becoming
+     unreadable, so the table scrolls horizontally inside its own card
+     instead — the ledger-book frame and toolbar stay put. */
+  .ledger-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table.ledger-table {
+    min-width: 640px;
+  }
+
+  .ledger-footer {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ledger-brand {
+    font-size: 17px;
+  }
+
+  .sidebar-title {
+    font-size: 19px;
+  }
+
+  .account-heading .name {
+    font-size: 19px;
+  }
+
+  .ledger-footer .value {
+    font-size: 17px;
+  }
+}
